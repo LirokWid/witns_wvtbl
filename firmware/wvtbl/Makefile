@@ -69,10 +69,11 @@ Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart_ex.c \
 Core/Src/system_stm32g4xx.c \
 Core/Src/dma.c \
 dsp/dsp.c \
+dsp/wave.c \
 drv/led_pwm.c \
 drv/encoder.c \
 drv/analog.c \
-drv/eeprom.c
+drv/eeprom.c 
 
 # ASM sources
 ASM_SOURCES =  \

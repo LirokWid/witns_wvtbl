@@ -34,7 +34,9 @@
 #include "drv/analog.h"
 #include "drv/eeprom.h"
 
+
 #include "dsp/dsp.h"
+#include "dsp/wave.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -130,8 +132,14 @@ void read_switch(void)
 		{
       eeprom_save.encoder = encoder_value(&h_encoder);
       printf("Saving pitch %d...\r\n", eeprom_save.encoder);
-      eeprom_write((void*)&eeprom_save, sizeof(eeprom_save_t));
-      printf("Pitch saved...\r\n");
+      if(eeprom_write((void*)&eeprom_save, sizeof(eeprom_save_t)) == HAL_OK)
+      {
+        printf("Pitch saved\r\n");
+        }
+      else
+      {
+        printf("Error saving pitch in eeprom\r\n");
+      }
 
 			state_SW = 1;
 		}
@@ -163,7 +171,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
     h_dsp.params[PITCH_PARAM] = encoder;
 
     h_dsp.params[X_PARAM] = x_param;
-    h_dsp.params[Y_PARAM] = x_param;
+    h_dsp.params[Y_PARAM] = y_param;
     h_dsp.inputs[PITCH_INPUT] = pitch;
     h_dsp.inputs[X_INPUT] = 0;
     h_dsp.inputs[Y_INPUT] = 0;
@@ -256,7 +264,6 @@ int main(void)
   {
     Error_Handler();
   }
-
   if (0 != analog_init(&h_analog))
   {
     Error_Handler();
@@ -275,7 +282,7 @@ int main(void)
   // Blink another color (eg. red) while calibrating, say 3V (C4)
 
   eeprom_read((void*)&eeprom_save, sizeof(eeprom_save_t));
-  printf("Encoder value: %d\r\n", eeprom_save.encoder);
+  printf("Encoder value: %ld\r\n", eeprom_save.encoder);
   encoder_set(&h_encoder, eeprom_save.encoder);
 
   while (1)
@@ -295,31 +302,11 @@ int main(void)
     float voct = ((float)(h_dsp.inputs[PITCH_INPUT]) - voct_sub) / voct_div;
     float blblbl = (voct - (int)voct) * 1000;
 
-    printf("ADC = %ld, V/oct = %d.%03d\r\n", h_dsp.inputs[PITCH_INPUT], (int)voct, (int)blblbl);
-
+    //printf("ADC = %ld, V/oct = %d.%03d\r\n", h_dsp.inputs[PITCH_INPUT], (int)voct, (int)blblbl);
+    //printf("X= %f | Y= %f\r\n", analog_to_minus1_to_1(h_dsp.params[X_PARAM]), analog_to_minus1_to_1(h_dsp.params[Y_PARAM]));
+    
     HAL_Delay(1000);
-    // if (h_dsp.params[PITCH_PARAM] != pitch)
-    // {
-    //   pitch = h_dsp.params[PITCH_PARAM];
-    //   printf("Pitch = %d\r\n", (int)pitch);
-    // }
-
-		// if (counter_SW != old_counter_SW)
-		// {
-		// 	old_counter_SW = counter_SW;
-		// 	printf("SW=%ld\r\n", counter_SW);
-		// }
-
-    // for (int it = 0 ; it < 4 ; it++)
-    // {
-    //   int diff = potentiometers[it] - old_potentiometers[it];
-    //   if ((diff > 10) || (diff < -10))
-    //   {
-    //     old_potentiometers[it] = potentiometers[it];
-
-    //     printf("Pot[%d] = %u\r\n", it, potentiometers[it]);
-    //   }
-    // }
+   
 
     /* USER CODE END WHILE */
 
